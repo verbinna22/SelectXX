@@ -1,0 +1,1 @@
+/mnt/data/MyOwnFolder/learning/p_algo/SelectX/SelectX/src/test/resources/graph.txt /mnt/data/MyOwnFolder/learning/p_algo/SelectX/SelectX/src/test/resources/v.txt /mnt/data/MyOwnFolder/learning/p_algo/SelectX/SelectX/src/test/resources/results.txt
