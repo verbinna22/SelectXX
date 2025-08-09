@@ -1,6 +1,6 @@
 package ru.yandex.mylogininya
 
-data class Label(val contextId: Int, val labelType: LabelType) {
+data class Label(val contextId: Int, val labelType: LabelType, val realType: LabelType = LabelType.BALANCED, val fieldId: Int = -1) {
     fun hasContext(): Boolean = contextId != 0
     fun isContextOpen(): Boolean = when (contextId) {
         0 -> throw IllegalArgumentException("Need context to have")

@@ -6,5 +6,8 @@ enum class LabelType {
     ALLOC,
     ALLOC_R,
     STORE,
+    LOAD,
+    LOAD_R,
+    STORE_R,
     BALANCED,
 }

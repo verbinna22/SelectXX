@@ -5,7 +5,7 @@ import java.io.File
 fun main() {
     File("graphs.txt").bufferedReader().forEachLine {
         val (graphFilename, vertexFilename, resultFile) = it.split(" ")
-        val graph = readGraphFromFile(graphFilename, vertexFilename)
+        val (graph, contextToVertexSet) = readGraphFromFile(graphFilename, vertexFilename)
         val (regularGraph, vertexToContextToChildren, vertexToContextToParents) = buildRegularGraph(graph)
         val insensitiveVertexes = selectX(regularGraph, vertexToContextToChildren, vertexToContextToParents)
         File(resultFile).bufferedWriter().use { file ->
@@ -27,6 +27,14 @@ fun main() {
             }
             file.flush()
             file.close()
+        }
+        val missedContextToPreviouslyMissed = mutableMapOf<Int, Int>()
+        var previouslyMissed = 0
+        contextToVertexSet.forEach { (context, set) ->
+            if (set.all { value -> insensitiveVertexes.contains(value) }) {
+                missedContextToPreviouslyMissed[context] = previouslyMissed
+                previouslyMissed++
+            }
         }
     }
 }
