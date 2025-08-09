@@ -9,6 +9,9 @@ fun main() {
         val (regularGraph, vertexToContextToChildren, vertexToContextToParents) = buildRegularGraph(graph)
         val insensitiveVertexes = selectX(regularGraph, vertexToContextToChildren, vertexToContextToParents)
         File(resultFile).bufferedWriter().use { file ->
+            file.write(insensitiveVertexes.size.toString())
+            file.newLine()
+            file.newLine()
             insensitiveVertexes.forEach { v ->
                 file.write(v.toString())
                 file.newLine()
