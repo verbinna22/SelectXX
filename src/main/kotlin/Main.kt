@@ -28,7 +28,7 @@ fun main() {
             file.flush()
             file.close()
         }
-        val missedContextToPreviouslyMissed = mutableMapOf<Int, Int>()
+        val missedContextToPreviouslyMissed = sortedMapOf<Int, Int>()
         var previouslyMissed = 0
         contextToVertexSet.forEach { (context, set) ->
             if (set.all { value -> insensitiveVertexes.contains(value) }) {
@@ -36,5 +36,6 @@ fun main() {
                 previouslyMissed++
             }
         }
+        dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, missedContextToPreviouslyMissed) // TODO if map is empty + dump it
     }
 }

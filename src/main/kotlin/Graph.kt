@@ -77,19 +77,20 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
     return Pair(Graph(ribs, numberOfVertexes), contextToVertexSet)
 }
 
-fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>) {
+fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumeration: SortedMap<Int, Int>) {
     File(filename).bufferedWriter().use { file ->
         graph.ribs.forEach { r ->
             file.write("${r.firstVertex} ${r.secondVertex}")
             file.write(
                 when (r.label.realType) {
-                    LabelType.ASSIGN -> if (r.label.hasContext() && !exclude.contains(r.firstVertex) && !exclude.contains(r.secondVertex))
-                                            "assign"
+                    LabelType.ASSIGN -> if (r.label.hasContext() && !(exclude.contains(r.firstVertex) && exclude.contains(r.secondVertex)))
+                                            "assign_${renumeration[renumeration.headMap(r.label.context()).lastKey()]!! + 1}_${r.label.openCloseString()}"
                                         else
                                             "assign"
                     LabelType.ASSIGN_R -> if (r.label.hasContext() && !exclude.contains(r.firstVertex) && !exclude.contains(r.secondVertex))
-                                            "assign_r"
-                                          else "assign_r"
+                                              "assign_r_${renumeration[renumeration.headMap(r.label.context()).lastKey()]!! + 1}_${r.label.openCloseString()}"
+                                          else
+                                              "assign_r"
                     LabelType.ALLOC -> "alloc"
                     LabelType.ALLOC_R -> "alloc_r"
                     LabelType.STORE -> "store ${r.label.fieldId}"
