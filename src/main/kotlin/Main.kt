@@ -5,6 +5,7 @@ import java.io.File
 fun main() {
     File("graphs.txt").bufferedReader().forEachLine {
         val (graphFilename, vertexFilename, resultFile) = it.split(" ")
+        println(graphFilename)
         val (graph, contextToVertexSet) = readGraphFromFile(graphFilename, vertexFilename)
         val (regularGraph, vertexToContextToChildren, vertexToContextToParents) = buildRegularGraph(graph)
         val insensitiveVertexes = selectX(regularGraph, vertexToContextToChildren, vertexToContextToParents)
@@ -36,6 +37,10 @@ fun main() {
                 previouslyMissed++
             }
         }
-        dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, missedContextToPreviouslyMissed) // TODO if map is empty + dump it
+        File("$resultFile.ctxn").bufferedWriter().use { file ->
+            file.write("${contextToVertexSet.size - missedContextToPreviouslyMissed.size}")
+        }
+        println("Decrease is ${missedContextToPreviouslyMissed.size}")
+        dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, missedContextToPreviouslyMissed)
     }
 }

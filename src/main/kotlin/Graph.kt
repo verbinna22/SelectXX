@@ -66,11 +66,13 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
             }
         }
         val fieldId = if (realType in LabelType.STORE..LabelType.STORE_R) graphRibItems[3].toInt() else -1
-        if (!contextToVertexSet.contains(context.absoluteValue)) {
-            contextToVertexSet[context.absoluteValue] = mutableSetOf()
+        if (context != 0) {
+            if (!contextToVertexSet.contains(context.absoluteValue)) {
+                contextToVertexSet[context.absoluteValue] = mutableSetOf()
+            }
+            contextToVertexSet[context.absoluteValue]!!.add(firstVertex)
+            contextToVertexSet[context.absoluteValue]!!.add(secondVertex)
         }
-        contextToVertexSet[context.absoluteValue]!!.add(firstVertex)
-        contextToVertexSet[context.absoluteValue]!!.add(secondVertex)
         ribs.add(Rib(firstVertex, secondVertex, Label(context, label, realType, fieldId)))
 //        vertexNumberToRibs[firstVertex].add(secondVertex)
     }
@@ -78,17 +80,23 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
 }
 
 fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumeration: SortedMap<Int, Int>) {
+    fun calculateContextNumber(label: Label): Int {
+        if (renumeration.headMap(label.context()).isEmpty()) {
+            return label.context()
+        }
+        return label.context() - renumeration[renumeration.headMap(label.context()).lastKey()]!! - 1
+    }
     File(filename).bufferedWriter().use { file ->
         graph.ribs.forEach { r ->
-            file.write("${r.firstVertex} ${r.secondVertex}")
+            file.write("${r.firstVertex} ${r.secondVertex} ")
             file.write(
                 when (r.label.realType) {
                     LabelType.ASSIGN -> if (r.label.hasContext() && !(exclude.contains(r.firstVertex) && exclude.contains(r.secondVertex)))
-                                            "assign_${renumeration[renumeration.headMap(r.label.context()).lastKey()]!! + 1}_${r.label.openCloseString()}"
+                                            "assign_${calculateContextNumber(r.label)}_${r.label.openCloseString()}"
                                         else
                                             "assign"
-                    LabelType.ASSIGN_R -> if (r.label.hasContext() && !exclude.contains(r.firstVertex) && !exclude.contains(r.secondVertex))
-                                              "assign_r_${renumeration[renumeration.headMap(r.label.context()).lastKey()]!! + 1}_${r.label.openCloseString()}"
+                    LabelType.ASSIGN_R -> if (r.label.hasContext() && !(exclude.contains(r.firstVertex) && exclude.contains(r.secondVertex)))
+                                              "assign_r_${calculateContextNumber(r.label)}_${r.label.openCloseString()}"
                                           else
                                               "assign_r"
                     LabelType.ALLOC -> "alloc"
