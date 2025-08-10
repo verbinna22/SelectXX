@@ -35,7 +35,7 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
     val contextToVertexSet = sortedMapOf<Int, MutableSet<Int>>()
 //    val vertexNumberToRibs: ArrayList<ArrayList<Int>> = ArrayList(Collections.nCopies(numberOfVertexes, arrayListOf()))
     File(ribsFilename).bufferedReader().forEachLine {
-        val graphRibItems = it.split(" ")
+        val graphRibItems = it.split(" ", "\t")
         val firstVertex = graphRibItems[0].toInt()
         val secondVertex = graphRibItems[1].toInt()
         val (label, context, realType) = when (graphRibItems[2]) {
@@ -88,7 +88,7 @@ fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumerat
     }
     File(filename).bufferedWriter().use { file ->
         graph.ribs.forEach { r ->
-            file.write("${r.firstVertex} ${r.secondVertex} ")
+            file.write("${r.firstVertex}\t${r.secondVertex}\t")
             file.write(
                 when (r.label.realType) {
                     LabelType.ASSIGN -> if (r.label.hasContext() && !(exclude.contains(r.firstVertex) && exclude.contains(r.secondVertex)))
