@@ -101,10 +101,10 @@ fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumerat
                                               "assign_r"
                     LabelType.ALLOC -> "alloc"
                     LabelType.ALLOC_R -> "alloc_r"
-                    LabelType.STORE -> "store ${r.label.fieldId}"
-                    LabelType.LOAD -> "load ${r.label.fieldId}"
-                    LabelType.LOAD_R -> "load_r ${r.label.fieldId}"
-                    LabelType.STORE_R -> "store_r ${r.label.fieldId}"
+                    LabelType.STORE -> "store_i ${r.label.fieldId}"
+                    LabelType.LOAD -> "load_i ${r.label.fieldId}"
+                    LabelType.LOAD_R -> "load_r_i ${r.label.fieldId}"
+                    LabelType.STORE_R -> "store_r_i ${r.label.fieldId}"
                     else -> throw IllegalArgumentException("incorrect rib for the general graph")
                 }
             )
