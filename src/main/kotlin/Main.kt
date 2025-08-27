@@ -1,12 +1,14 @@
 package ru.yandex.mylogininya
 
 import java.io.File
+import kotlin.collections.mutableMapOf
+import kotlin.math.max
 
 fun main() {
     File("graphs.txt").bufferedReader().forEachLine {
         val (graphFilename, vertexFilename, resultFile) = it.split(" ")
         println(graphFilename)
-        val (graph, contextToVertexSet) = readGraphFromFile(graphFilename, vertexFilename)
+        val (graph, functionalContextToContextToVertexSet) = readGraphFromFile(graphFilename, vertexFilename)
         val (regularGraph, vertexToContextToChildren, vertexToContextToParents) = buildRegularGraph(graph)
         val insensitiveVertexes = selectX(regularGraph, vertexToContextToChildren, vertexToContextToParents)
         File(resultFile).bufferedWriter().use { file ->
@@ -29,18 +31,26 @@ fun main() {
             file.flush()
             file.close()
         }
-        val missedContextToPreviouslyMissed = sortedMapOf<Int, Int>()
-        var previouslyMissed = 0
-        contextToVertexSet.forEach { (context, set) ->
-            if (set.all { value -> insensitiveVertexes.contains(value) }) {
-                missedContextToPreviouslyMissed[context] = previouslyMissed
-                previouslyMissed++
+        val functionalContextToContextToNewContext = mutableMapOf<Int, MutableMap<Int, Int>>()
+        var maxContextNumber = 0 // TODO 0 is not a context
+        var maxOldNumber = 0
+        functionalContextToContextToVertexSet.forEach { (funId, contextToVertexSet) ->
+            var newContextId = 0
+            contextToVertexSet.forEach { (context, set) ->
+                maxOldNumber = max(maxOldNumber, context)
+                if (!set.all { value -> insensitiveVertexes.contains(value) }) {
+                    if (!functionalContextToContextToNewContext.contains(funId)) {
+                        functionalContextToContextToNewContext[funId] = mutableMapOf<Int, Int>()
+                    }
+                    functionalContextToContextToNewContext[funId]!![context] = ++newContextId
+                }
             }
+            maxContextNumber = max(newContextId, maxContextNumber)
         }
         File("$resultFile.ctxn").bufferedWriter().use { file ->
-            file.write("${contextToVertexSet.size - missedContextToPreviouslyMissed.size}")
+            file.write("$maxContextNumber")
         }
-        println("Decrease is ${missedContextToPreviouslyMissed.size}")
-        dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, missedContextToPreviouslyMissed)
+        println("Decrease is ${maxOldNumber - maxContextNumber}")
+        dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, functionalContextToContextToNewContext)
     }
 }

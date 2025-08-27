@@ -14,7 +14,7 @@
 6	8	assign_r_1_close
 7	6	assign_2_open
 6	7	assign_r_2_close
-5	6	store 0
-6	5	store_r 0
-4	0	load 0
-0	4	load_r 0
+5	6	store_i 0
+6	5	store_r_i 0
+4	0	load_i 0
+0	4	load_r_i 0

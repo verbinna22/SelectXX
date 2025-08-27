@@ -2,7 +2,7 @@ package ru.yandex.mylogininya
 
 import kotlin.math.absoluteValue
 
-data class Label(val contextId: Int, val labelType: LabelType, val realType: LabelType = LabelType.BALANCED, val fieldId: Int = -1) {
+data class Label(val contextId: Int, val labelType: LabelType, val funId: Int = 0, val realType: LabelType = LabelType.BALANCED, val fieldId: Int = -1) {
     fun hasContext(): Boolean = contextId != 0
     fun isContextOpen(): Boolean = when (contextId) {
         0 -> throw IllegalArgumentException("Need context to have")

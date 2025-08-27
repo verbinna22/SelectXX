@@ -2,6 +2,7 @@ package ru.yandex.mylogininya
 
 import java.io.File
 import java.util.SortedMap
+import kotlin.collections.mutableMapOf
 import kotlin.math.absoluteValue
 
 //class Graph(val ribs: ArrayList<Rib>, val vertexNumberToRibs: ArrayList<ArrayList<Int>>) {
@@ -29,24 +30,24 @@ import kotlin.math.absoluteValue
 
 data class Graph(val ribs: List<Rib>, val vertexesNumber: Int)
 
-fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair<Graph, SortedMap<Int, MutableSet<Int>>> {
+fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair<Graph, MutableMap<Int, MutableMap<Int, MutableSet<Int>>>> {
     val ribs: ArrayList<Rib> = arrayListOf()
     val numberOfVertexes = File(vertexMappingFilename).bufferedReader().lines().count().toInt()
-    val contextToVertexSet = sortedMapOf<Int, MutableSet<Int>>()
-//    val vertexNumberToRibs: ArrayList<ArrayList<Int>> = ArrayList(Collections.nCopies(numberOfVertexes, arrayListOf()))
+    val functionalContextToContextToVertexSet = mutableMapOf<Int, MutableMap<Int, MutableSet<Int>>>()
+    data class LineItem(val label: LabelType, val realType: LabelType, val context: Int = 0, val functionId: Int = 0)
     File(ribsFilename).bufferedReader().forEachLine {
         val graphRibItems = it.split(" ", "\t")
         val firstVertex = graphRibItems[0].toInt()
         val secondVertex = graphRibItems[1].toInt()
-        val (label, context, realType) = when (graphRibItems[2]) {
-            "alloc" -> Triple(LabelType.ALLOC, 0, LabelType.ALLOC)
-            "alloc_r" -> Triple(LabelType.ALLOC_R, 0, LabelType.ALLOC_R)
-            "assign" -> Triple(LabelType.ASSIGN, 0, LabelType.ASSIGN)
-            "load_i" -> Triple(LabelType.ASSIGN, 0, LabelType.LOAD)
-            "assign_r" -> Triple(LabelType.ASSIGN_R, 0, LabelType.ASSIGN_R)
-            "load_r_i" -> Triple(LabelType.ASSIGN_R, 0, LabelType.LOAD_R)
-            "store_i" -> Triple(LabelType.STORE, 0, LabelType.STORE)
-            "store_r_i" -> Triple(LabelType.STORE, 0, LabelType.STORE_R)
+        val (label, realType, context, funId) = when (graphRibItems[2]) {
+            "alloc" -> LineItem(LabelType.ALLOC, LabelType.ALLOC) //Triple(LabelType.ALLOC, 0, LabelType.ALLOC)
+            "alloc_r" -> LineItem(LabelType.ALLOC_R, LabelType.ALLOC_R)
+            "assign" -> LineItem(LabelType.ASSIGN, LabelType.ASSIGN)
+            "load_i" -> LineItem(LabelType.ASSIGN, LabelType.LOAD)
+            "assign_r" -> LineItem(LabelType.ASSIGN_R, LabelType.ASSIGN_R)
+            "load_r_i" -> LineItem(LabelType.ASSIGN_R, LabelType.LOAD_R)
+            "store_i" -> LineItem(LabelType.STORE, LabelType.STORE)
+            "store_r_i" -> LineItem(LabelType.STORE, LabelType.STORE_R)
             else -> {
                 var (label, rest) = when {
                     graphRibItems[2].startsWith("assign_") -> {
@@ -60,31 +61,30 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
 
                     else -> throw IllegalArgumentException("Must start with assign")
                 }
-                val (contextNumberString, contextEdgeType) = rest.split("_")
+                val (funIdString, contextNumberString, contextEdgeType) = rest.split("_")
                 val contextNumber = contextNumberString.toInt() * (if (contextEdgeType == "open") 1 else -1)
-                Triple(label, contextNumber, label)
+                LineItem(label, label, contextNumber, funIdString.toInt())
             }
         }
         val fieldId = if (realType in LabelType.STORE..LabelType.STORE_R) graphRibItems[3].toInt() else -1
         if (context != 0) {
-            if (!contextToVertexSet.contains(context.absoluteValue)) {
-                contextToVertexSet[context.absoluteValue] = mutableSetOf()
+            if (!functionalContextToContextToVertexSet.contains(funId)) {
+                functionalContextToContextToVertexSet[funId] = mutableMapOf<Int, MutableSet<Int>>()
             }
-            contextToVertexSet[context.absoluteValue]!!.add(firstVertex)
-            contextToVertexSet[context.absoluteValue]!!.add(secondVertex)
+            if (!functionalContextToContextToVertexSet[funId]!!.contains(context.absoluteValue)) {
+                functionalContextToContextToVertexSet[funId]!![context.absoluteValue] = mutableSetOf()
+            }
+            functionalContextToContextToVertexSet[funId]!![context.absoluteValue]!!.add(firstVertex)
+            functionalContextToContextToVertexSet[funId]!![context.absoluteValue]!!.add(secondVertex)
         }
-        ribs.add(Rib(firstVertex, secondVertex, Label(context, label, realType, fieldId)))
-//        vertexNumberToRibs[firstVertex].add(secondVertex)
+        ribs.add(Rib(firstVertex, secondVertex, Label(context, label, funId, realType, fieldId)))
     }
-    return Pair(Graph(ribs, numberOfVertexes), contextToVertexSet)
+    return Pair(Graph(ribs, numberOfVertexes), functionalContextToContextToVertexSet)
 }
 
-fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumeration: SortedMap<Int, Int>) {
+fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumeration: MutableMap<Int, MutableMap<Int, Int>>) {
     fun calculateContextNumber(label: Label): Int {
-        if (renumeration.headMap(label.context()).isEmpty()) {
-            return label.context()
-        }
-        return label.context() - renumeration[renumeration.headMap(label.context()).lastKey()]!! - 1
+        return renumeration[label.funId]!![label.contextId.absoluteValue]!!
     }
     File(filename).bufferedWriter().use { file ->
         graph.ribs.forEach { r ->
