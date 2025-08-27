@@ -1,7 +1,6 @@
 package ru.yandex.mylogininya
 
 import java.io.File
-import java.util.SortedMap
 import kotlin.collections.mutableMapOf
 import kotlin.math.absoluteValue
 
@@ -69,7 +68,7 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
         val fieldId = if (realType in LabelType.STORE..LabelType.STORE_R) graphRibItems[3].toInt() else -1
         if (context != 0) {
             if (!functionalContextToContextToVertexSet.contains(funId)) {
-                functionalContextToContextToVertexSet[funId] = mutableMapOf<Int, MutableSet<Int>>()
+                functionalContextToContextToVertexSet[funId] = mutableMapOf()
             }
             if (!functionalContextToContextToVertexSet[funId]!!.contains(context.absoluteValue)) {
                 functionalContextToContextToVertexSet[funId]!![context.absoluteValue] = mutableSetOf()

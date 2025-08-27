@@ -32,7 +32,7 @@ fun main() {
             file.close()
         }
         val functionalContextToContextToNewContext = mutableMapOf<Int, MutableMap<Int, Int>>()
-        var maxContextNumber = 0 // TODO 0 is not a context
+        var maxContextNumber = 0
         var maxOldNumber = 0
         functionalContextToContextToVertexSet.forEach { (funId, contextToVertexSet) ->
             var newContextId = 0
@@ -40,7 +40,7 @@ fun main() {
                 maxOldNumber = max(maxOldNumber, context)
                 if (!set.all { value -> insensitiveVertexes.contains(value) }) {
                     if (!functionalContextToContextToNewContext.contains(funId)) {
-                        functionalContextToContextToNewContext[funId] = mutableMapOf<Int, Int>()
+                        functionalContextToContextToNewContext[funId] = mutableMapOf()
                     }
                     functionalContextToContextToNewContext[funId]!![context] = ++newContextId
                 }
