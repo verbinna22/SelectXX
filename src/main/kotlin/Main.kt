@@ -34,6 +34,7 @@ fun main() {
         val functionalContextToContextToNewContext = mutableMapOf<Int, MutableMap<Int, Int>>()
         var maxContextNumber = 0
         var maxOldNumber = 0
+        val aliveFunIds = mutableSetOf<Int>()
         functionalContextToContextToVertexSet.forEach { (funId, contextToVertexSet) ->
             var newContextId = 0
             contextToVertexSet.forEach { (context, set) ->
@@ -43,12 +44,18 @@ fun main() {
                         functionalContextToContextToNewContext[funId] = mutableMapOf()
                     }
                     functionalContextToContextToNewContext[funId]!![context] = ++newContextId
+                    aliveFunIds.add(funId)
                 }
             }
             maxContextNumber = max(newContextId, maxContextNumber)
         }
         File("$resultFile.ctxn").bufferedWriter().use { file ->
             file.write("$maxContextNumber")
+        }
+        File("$resultFile.aliveIds").bufferedWriter().use { file ->
+            aliveFunIds.forEach { id ->
+                file.write("$id\n")
+            }
         }
         println("Decrease is ${maxOldNumber - maxContextNumber}")
         dumpGraphToFile("$resultFile.g", graph, insensitiveVertexes, functionalContextToContextToNewContext)
