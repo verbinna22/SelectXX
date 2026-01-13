@@ -47,6 +47,8 @@ fun readGraphFromFile(ribsFilename: String, vertexMappingFilename: String): Pair
             "load_r_i" -> LineItem(LabelType.ASSIGN_R, LabelType.LOAD_R)
             "store_i" -> LineItem(LabelType.STORE, LabelType.STORE)
             "store_r_i" -> LineItem(LabelType.STORE, LabelType.STORE_R)
+            "entrypoint" -> LineItem(LabelType.ASSIGN, LabelType.ENTRYPOINT)
+            "entrypoint_r" -> LineItem(LabelType.ASSIGN_R, LabelType.ENTRYPOINT_R)
             else -> {
                 var (label, rest) = when {
                     graphRibItems[2].startsWith("assign_") -> {
@@ -104,6 +106,8 @@ fun dumpGraphToFile(filename: String, graph: Graph, exclude: Set<Int>, renumerat
                     LabelType.LOAD -> "load_i ${r.label.fieldId}"
                     LabelType.LOAD_R -> "load_r_i ${r.label.fieldId}"
                     LabelType.STORE_R -> "store_r_i ${r.label.fieldId}"
+                    LabelType.ENTRYPOINT -> "entrypoint"
+                    LabelType.ENTRYPOINT_R -> "entrypoint_r"
                     else -> throw IllegalArgumentException("incorrect rib for the general graph")
                 }
             )

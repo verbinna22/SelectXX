@@ -10,4 +10,6 @@ enum class LabelType {
     LOAD_R,
     STORE_R,
     BALANCED,
+    ENTRYPOINT,
+    ENTRYPOINT_R,
 }
